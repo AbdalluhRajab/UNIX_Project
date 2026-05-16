@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS items (
 );
 
 INSERT INTO items (keyword, recommendation) VALUES
-  ('hot',   'Summer'),
+  ('hot',   'Summmer'),
   ('cold',  'Winter'),
   ('rainy', 'Autumn'),
   ('mild',  'Spring'),
