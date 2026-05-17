@@ -1,0 +1,15 @@
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~
+
+# Docker / build artifacts
+*.log
+
+# Jenkins
+jenkins/jenkins_home/
+
+# Environment variables
+.env
