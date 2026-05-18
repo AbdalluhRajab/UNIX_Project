@@ -1,0 +1,16 @@
+jenkins:
+  systemMessage: "Recommendation App CI/CD - configured via JCasC"
+  numExecutors: 2
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: true
+
+unclassified:
+  location:
+    url: "http://192.168.1.31:8081/"
