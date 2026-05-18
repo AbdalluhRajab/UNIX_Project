@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     container_name: rec_www
     restart: unless-stopped
-    volumes:
-      - ./html:/var/www/html
     ports:
       - "8000:80"
     environment:

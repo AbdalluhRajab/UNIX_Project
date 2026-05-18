@@ -45,12 +45,17 @@ pipeline {
 
         stage('Smoke Test') {
             steps {
-                echo 'Checking if the application is running on port 8000'
+                echo 'Checking that the recommendation page is served correctly'
                 sh '''
-                    if curl -sf http://host.docker.internal:8000/ > /dev/null; then
-                        echo "Application is running successfully"
-                    else
+                    body=$(curl -sf http://host.docker.internal:8000/) || {
                         echo "Application is not responding"
+                        exit 1
+                    }
+                    if echo "$body" | grep -q "Recommendation System"; then
+                        echo "Application is serving the recommendation page"
+                    else
+                        echo "Got HTTP 200 but the page is not the recommendation app:"
+                        echo "$body" | head -20
                         exit 1
                     fi
                 '''
