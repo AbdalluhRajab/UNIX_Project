@@ -1,5 +1,3 @@
-
-
 pipeline {
     agent any
 
@@ -10,41 +8,49 @@ pipeline {
     environment {
         GIT_REPO = 'https://github.com/AbdalluhRajab/UNIX_Project.git'
         GIT_BRANCH = 'main'
+
+        MYSQL_ROOT_PASSWORD = 'password'
+        MYSQL_DATABASE = 'recommendations_db'
+
+        COMPOSE_PROJECT_NAME = 'recommendation-app'
     }
 
     stages {
-
         stage('Checkout') {
             steps {
-                echo "Pulling latest code from ${GIT_REPO} (branch: ${GIT_BRANCH})..."
+                echo "Pulling latest code from ${GIT_REPO} branch ${GIT_BRANCH}"
                 git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building Docker images...'
-                sh 'docker compose build'
+                echo 'Building Docker images'
+                sh 'docker compose -p recommendation-app build'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Stopping any existing containers and starting fresh...'
-                sh 'docker compose up -d --force-recreate www db'
-                echo 'Waiting a few seconds for the app to be ready...'
-                sh 'sleep 5'
+                echo 'Stopping old containers if they exist'
+                sh 'docker compose -p recommendation-app down || true'
+
+                echo 'Starting updated containers'
+                sh 'docker compose -p recommendation-app up -d --build --force-recreate'
+
+                echo 'Waiting for containers to start'
+                sh 'sleep 15'
             }
         }
 
         stage('Smoke Test') {
             steps {
-                echo 'Verifying the app responds on port 8000...'
+                echo 'Checking if the application is running on port 8000'
                 sh '''
-                    if curl -sf http://localhost:8000/ > /dev/null; then
-                        echo "App is UP and responding"
+                    if curl -sf http://host.docker.internal:8000/ > /dev/null; then
+                        echo "Application is running successfully"
                     else
-                        echo "App is DOWN"
+                        echo "Application is not responding"
                         exit 1
                     fi
                 '''
@@ -54,13 +60,16 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline finished successfully. App is live at http://<server-ip>:8000'
+            echo 'Pipeline finished successfully'
+            echo 'Application is available on http://localhost:8000'
         }
+
         failure {
-            echo 'Pipeline failed. Check the logs above.'
+            echo 'Pipeline failed. Check the logs above'
         }
+
         always {
-            echo 'Pipeline run complete.'
+            echo 'Pipeline run complete'
         }
     }
 }
