@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Checking that the recommendation page is served correctly...'
                 sh '''
-                    body=$(curl -sf http://host.docker.internal:8080/) || {
+                    body=$(curl -sf http://www/) || {
                         echo "Application is not responding"
                         exit 1
                     }
