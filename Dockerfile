@@ -1,21 +1,7 @@
-FROM ubuntu:22.04
+FROM php:8.2-apache
 
-ENV DEBIAN_FRONTEND=noninteractive
+RUN docker-php-ext-install mysqli
 
-RUN apt-get update && apt-get install -y \
-    apache2 \
-    php \
-    libapache2-mod-php \
-    php-mysql \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN rm -f /var/www/html/index.html
-
-WORKDIR /var/www/html
-
-COPY html/ /var/www/html/
+COPY . /var/www/html/
 
 EXPOSE 80
-
-CMD ["/usr/sbin/apachectl", "-D", "FOREGROUND"]
