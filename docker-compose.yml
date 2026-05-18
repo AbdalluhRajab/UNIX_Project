@@ -2,6 +2,7 @@ services:
   web:
     build: .
     container_name: sum_app_web
+    restart: always
     ports:
       - "8081:80"
     depends_on:
@@ -23,4 +24,4 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "sumuser", "-p12345"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10

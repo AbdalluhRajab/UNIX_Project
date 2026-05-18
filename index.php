@@ -4,10 +4,22 @@ $user = "sumuser";
 $password = "12345";
 $dbname = "sum_app";
 
-$conn = new mysqli($host, $user, $password, $dbname);
+$conn = null;
+$maxRetries = 10;
+$retryDelay = 3;
+
+for ($i = 1; $i <= $maxRetries; $i++) {
+    $conn = @new mysqli($host, $user, $password, $dbname);
+
+    if (!$conn->connect_error) {
+        break;
+    }
+
+    sleep($retryDelay);
+}
 
 if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+    die("Database connection failed. Please refresh the page after a few seconds.");
 }
 
 $result = "";
@@ -45,6 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form method="POST">
         <input type="number" step="any" name="number1" placeholder="Enter first number" required>
         <input type="number" step="any" name="number2" placeholder="Enter second number" required>
+
         <button type="submit">Calculate Sum</button>
     </form>
 
