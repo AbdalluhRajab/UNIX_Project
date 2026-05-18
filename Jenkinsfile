@@ -1,52 +1,53 @@
 pipeline {
     agent any
 
-    // Jenkins checks GitHub every 2 minutes for new commits.
     triggers {
         pollSCM('H/2 * * * *')
     }
 
     environment {
-        GIT_REPO  = 'https://github.com/AbdalluhRajab/UNIX_Project.git'
+        GIT_REPO = 'https://github.com/AbdalluhRajab/UNIX_Project.git'
         GIT_BRANCH = 'main'
 
         MYSQL_ROOT_PASSWORD = 'password'
-        MYSQL_DATABASE      = 'recommendations_db'
+        MYSQL_DATABASE = 'recommendations_db'
 
-        // Use a project name different from Jenkins's own compose project,
-        // so the pipeline only ever touches the application containers.
-        COMPOSE_PROJECT_NAME = 'unix-project'
+        COMPOSE_PROJECT_NAME = 'recommendation-app'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 echo "Pulling latest code from ${GIT_REPO} branch ${GIT_BRANCH}"
-                sh 'bash scripts/pull.sh .'
+                git branch: "${GIT_BRANCH}", url: "${GIT_REPO}"
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building application Docker image...'
-                sh 'docker compose -p unix-project build www'
+                echo 'Building Docker images'
+                sh 'docker compose -p recommendation-app build'
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Recreating application containers (www, db, phpmyadmin only).'
-                echo 'Jenkins container is intentionally excluded.'
-                sh 'docker compose -p unix-project up -d --force-recreate www db phpmyadmin'
-                sh 'sleep 10'
+                echo 'Stopping old containers if they exist'
+                sh 'docker compose -p recommendation-app down || true'
+
+                echo 'Starting updated containers'
+                sh 'docker compose -p recommendation-app up -d --build --force-recreate'
+
+                echo 'Waiting for containers to start'
+                sh 'sleep 15'
             }
         }
 
         stage('Smoke Test') {
             steps {
-                echo 'Checking that the recommendation page is served correctly...'
+                echo 'Checking that the recommendation page is served correctly'
                 sh '''
-                    body=$(curl -sf http://www/) || {
+                    body=$(curl -sf http://host.docker.internal:8000/) || {
                         echo "Application is not responding"
                         exit 1
                     }
@@ -64,14 +65,16 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline finished successfully.'
-            echo 'Application is available on http://192.168.1.31:8080'
+            echo 'Pipeline finished successfully'
+            echo 'Application is available on http://localhost:8000'
         }
+
         failure {
-            echo 'Pipeline failed. Check the logs above.'
+            echo 'Pipeline failed. Check the logs above'
         }
+
         always {
-            echo 'Pipeline run complete.'
+            echo 'Pipeline run complete'
         }
     }
 }
