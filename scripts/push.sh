@@ -1,48 +1,26 @@
 #!/bin/bash
 
-# Automated Git push script for UNIX_Project
-# Usage:
-#   bash scripts/push.sh abdallah "commit message"
-#   bash scripts/push.sh abdallah2 "commit message"
-
-if [ $# -ne 2 ]; then
-    echo "Usage: bash scripts/push.sh <abdallah|abdallah2> \"commit message\""
+if [ -z "$1" ]; then
+    echo "Usage: bash scripts/push.sh \"commit message\""
     exit 1
 fi
 
-USER_ACCOUNT="$1"
-MESSAGE="$2"
+MESSAGE="$1"
 
-case "$USER_ACCOUNT" in
-    abdallah)
-        NAME="AbdalluhRajab"
-        EMAIL="abdalluh.mahfos2@gmail.com"
-        ;;
-    abdallah2)
-        NAME="abdalluhrajab2-dot"
-        EMAIL="abdalluh.rajab2@gmail.com"
-        ;;
-    *)
-        echo "Unknown user. Use: abdallah or abdallah2"
-        exit 1
-        ;;
-esac
+echo "Current Git user"
+git config user.name
+git config user.email
 
-BRANCH=$(git branch --show-current)
+echo "Pulling latest changes from main"
+git pull origin main
 
-echo "Using Git identity:"
-echo "$NAME <$EMAIL>"
-
-git config user.name "$NAME"
-git config user.email "$EMAIL"
-
-echo "Adding files..."
+echo "Adding changed files"
 git add -A
 
-echo "Creating commit..."
+echo "Creating commit"
 git commit -m "$MESSAGE"
 
-echo "Pushing to GitHub..."
-git push origin "$BRANCH"
+echo "Pushing to GitHub"
+git push origin main
 
-echo "Done."
+echo "Done"
